@@ -3,101 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nando Print Solution - Ultimate Edition</title>
+    <title>Nando Print - Smart Management</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
     <style>
-        * { box-sizing: border-box; transition: 0.3s; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin: 0; padding: 15px; min-height: 100vh; color: #333; }
-        .container { max-width: 1250px; margin: 0 auto; background: rgba(255, 255, 255, 0.95); padding: 25px; border-radius: 20px; box-shadow: 0 15px 50px rgba(0,0,0,0.3); }
+        * { box-sizing: border-box; transition: 0.2s; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 15px; color: #1c1e21; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         
-        /* Layout Grid */
-        .main-content { display: grid; grid-template-columns: 1fr 2.8fr; gap: 25px; }
+        /* Layout */
+        .header { text-align: center; margin-bottom: 25px; border-bottom: 2px solid #667eea; padding-bottom: 10px; }
+        .main-content { display: grid; grid-template-columns: 1fr 2.5fr; gap: 20px; }
         
-        /* Input Styling */
-        .input-section { background: #ffffff; padding: 20px; border-radius: 15px; border: 1px solid #e0e0e0; box-shadow: inset 0 2px 5px rgba(0,0,0,0.05); height: fit-content; }
+        /* Form */
+        .input-section { background: #fafafa; padding: 20px; border-radius: 12px; border: 1px solid #ddd; height: fit-content; }
         .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 7px; font-weight: 700; color: #4b6cb7; font-size: 14px; }
-        .form-group input, .form-group select { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 10px; font-size: 14px; outline: none; }
-        .form-group input:focus { border-color: #667eea; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 13px; color: #4b6cb7; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
         
-        /* Button Styling */
-        .btn-submit { width: 100%; padding: 15px; background: linear-gradient(to right, #667eea, #764ba2); color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 16px; cursor: pointer; box-shadow: 0 4px 15px rgba(118, 75, 162, 0.3); }
-        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(118, 75, 162, 0.4); }
+        .btn-submit { width: 100%; padding: 12px; background: #667eea; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-submit:hover { background: #5a67d8; }
 
-        /* Table & Action Styling */
-        .table-container { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        table { width: 100%; border-collapse: collapse; }
-        thead { background: #4b6cb7; color: white; }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+        /* Table */
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        thead { background: #667eea; color: white; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 13px; }
         
-        .foto-thumbnail { width: 55px; height: 55px; object-fit: cover; border-radius: 8px; border: 1px solid #eee; cursor: pointer; }
-        .status-badge { padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; color: white; border: none; cursor: pointer; text-transform: uppercase; }
-        .status-antri { background: #bdc3c7; }
-        .status-proses { background: #f39c12; }
-        .status-selesai { background: #27ae60; }
+        /* Status & Actions */
+        .badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; color: white; border: none; cursor: pointer; }
+        .bg-antri { background: #95a5a6; }
+        .bg-proses { background: #f39c12; }
+        .bg-selesai { background: #27ae60; }
 
-        .btn-action { padding: 7px 12px; border-radius: 6px; border: none; color: white; cursor: pointer; font-size: 11px; font-weight: bold; margin-right: 3px; display: inline-flex; align-items: center; text-decoration: none; }
+        .btn-action { padding: 6px 10px; border-radius: 6px; border: none; color: white; cursor: pointer; font-size: 11px; margin-right: 3px; text-decoration: none; display: inline-block; }
         .btn-wa { background: #25d366; }
         .btn-view { background: #3498db; }
         .btn-delete { background: #e74c3c; }
 
-        .total-section { margin-top: 25px; background: #2ecc71; color: white; padding: 20px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
-        
-        /* Responsive Card Mode for Mobile */
-        @media (max-width: 850px) {
+        .total-card { margin-top: 20px; background: #27ae60; color: white; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; }
+
+        @media (max-width: 800px) {
             .main-content { grid-template-columns: 1fr; }
             thead { display: none; }
-            tr { display: block; background: #fff; margin-bottom: 15px; border-radius: 12px; padding: 15px; border: 1px solid #eee; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-            td { display: flex; justify-content: space-between; align-items: center; border: none; padding: 8px 0; text-align: right; border-bottom: 1px dashed #f0f0f0; }
-            td:last-child { border-bottom: none; margin-top: 10px; }
-            td::before { content: attr(data-label); font-weight: 800; color: #4b6cb7; font-size: 11px; text-transform: uppercase; }
-            .btn-action { flex: 1; justify-content: center; padding: 12px; }
+            tr { display: block; border: 1px solid #ddd; margin-bottom: 10px; border-radius: 10px; padding: 10px; }
+            td { display: flex; justify-content: space-between; border: none; padding: 5px; text-align: right; }
+            td::before { content: attr(data-label); font-weight: bold; color: #667eea; }
+            .btn-action { width: 30%; text-align: center; }
         }
-
-        #previewBox { margin-top: 10px; display: none; text-align: center; }
-        #imgPreview { max-width: 120px; border-radius: 10px; border: 2px dashed #667eea; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div style="text-align: center; margin-bottom: 30px;">
-        <h1 style="margin:0; color:#2c3e50; font-size: 2.2em;">🖨️ Nando Print Pro Max</h1>
-        <p style="color:#7f8c8d; font-size: 14px;">Cloud Sync • Auto Print • No Drama</p>
+    <div class="header">
+        <h1 style="margin:0;">🖨️ Nando Print Smart</h1>
+        <p style="margin:5px 0 0; font-size:12px; color:#666;">Manajemen Orderan Anti-Ribet</p>
     </div>
 
     <div class="main-content">
         <div class="input-section">
-            <h3 style="margin-top:0; color:#4b6cb7;">📝 Order Baru</h3>
             <div class="form-group">
                 <label>Nama Pelanggan</label>
-                <input type="text" id="namaPelanggan" placeholder="Siapa namanya?">
+                <input type="text" id="nama" placeholder="Contoh: Budi">
             </div>
             <div class="form-group">
-                <label>No. WhatsApp</label>
-                <input type="text" id="noTelepon" placeholder="0812...">
+                <label>WhatsApp (08...)</label>
+                <input type="text" id="telp" placeholder="0812345678">
             </div>
             <div class="form-group">
-                <label>Jenis Kertas</label>
-                <select id="jenisKertas">
-                    <option value="A4" data-harga="1000">Kertas A4 (Rp 1.000)</option>
-                    <option value="F4" data-harga="1000">Kertas F4 (Rp 1.000)</option>
-                    <option value="A4 Foto" data-harga="3000">Kertas Foto A4 (Rp 3.000)</option>
-                </select>
+                <label>Jenis & Jumlah</label>
+                <div style="display: flex; gap: 5px;">
+                    <select id="jenis" style="flex: 2;">
+                        <option value="A4" data-harga="1000">A4 (1rb)</option>
+                        <option value="F4" data-harga="1000">F4 (1rb)</option>
+                        <option value="Foto A4" data-harga="3000">Foto (3rb)</option>
+                    </select>
+                    <input type="number" id="qty" value="1" style="flex: 1;">
+                </div>
             </div>
             <div class="form-group">
-                <label>Jumlah Lembar</label>
-                <input type="number" id="jumlahLembar" value="1" min="1">
+                <label>Estimasi Selesai (Menit)</label>
+                <input type="number" id="estimasi" value="10">
             </div>
             <div class="form-group">
-                <label>📷 Upload File/Foto</label>
-                <input type="file" id="fileInput" accept="image/*" onchange="handleFile()">
-                <div id="previewBox"><img id="imgPreview" src=""></div>
+                <label>File Gambar</label>
+                <input type="file" id="fotoInput" accept="image/*" onchange="convertFoto()">
             </div>
-            <button class="btn-submit" onclick="tambahKeCloud()">🚀 Kirim ke Cloud</button>
+            <button class="btn-submit" onclick="simpanData()">➕ Tambah Antrean</button>
         </div>
 
         <div class="output-section">
@@ -105,27 +100,27 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Foto</th>
+                            <th>Preview</th>
                             <th>Nama</th>
-                            <th>No. Telp</th>
                             <th>Status</th>
+                            <th>Ambil Dalam</th>
                             <th>Total</th>
-                            <th>Aksi</th>
+                            <th>Opsi</th>
                         </tr>
                     </thead>
-                    <tbody id="tabelBody"></tbody>
+                    <tbody id="listOrder"></tbody>
                 </table>
             </div>
-            <div class="total-section">
-                <span>💰 TOTAL OMZET HARI INI:</span>
-                <span style="font-size: 1.5em;">Rp <span id="totalDisplay">0</span></span>
+            <div class="total-card">
+                <span>💰 Pendapatan Hari Ini</span>
+                <span style="font-size: 1.4em;">Rp <span id="omzet">0</span></span>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    // 1. KONFIGURASI FIREBASE (Gunakan milikmu)
+    // 1. CONFIG FIREBASE (Gunakan punya lu sendiri)
     const firebaseConfig = {
         apiKey: "AIzaSyB4CBP0S3dhsxFb17ToVhFFF7Kvjw_7j88",
         authDomain: "print-nndo.firebaseapp.com",
@@ -137,154 +132,111 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    const shopRef = db.ref('pesanan_nando');
+    const rootRef = db.ref('pesanan_nando');
+    const PIN = "1234"; 
+    let fotoBase64 = "";
 
-    // 2. VARIABEL GLOBAL
-    const ADMIN_PIN = "2509"; // Ganti PIN Rahasiamu di sini
-    let base64Image = "";
-    let isInitialLoad = true;
-
-    // 3. FUNGSI HANDLE FILE
-    function handleFile() {
-        const file = document.getElementById('fileInput').files[0];
+    function convertFoto() {
+        const file = document.getElementById('fotoInput').files[0];
         const reader = new FileReader();
-        reader.onloadend = () => {
-            base64Image = reader.result;
-            document.getElementById('imgPreview').src = base64Image;
-            document.getElementById('previewBox').style.display = 'block';
-        };
-        if (file) reader.readAsDataURL(file);
+        reader.onloadend = () => fotoBase64 = reader.result;
+        if(file) reader.readAsDataURL(file);
     }
 
-    // 4. FUNGSI SIMPAN DATA
-    function tambahKeCloud() {
-        const nama = document.getElementById('namaPelanggan').value.trim();
-        const telp = document.getElementById('noTelepon').value.trim();
-        const sel = document.getElementById('jenisKertas');
-        const qty = parseInt(document.getElementById('jumlahLembar').value);
-        const harga = parseInt(sel.options[sel.selectedIndex].getAttribute('data-harga'));
+    function simpanData() {
+        const nama = document.getElementById('nama').value;
+        const telp = document.getElementById('telp').value;
+        const select = document.getElementById('jenis');
+        const qty = parseInt(document.getElementById('qty').value);
+        const est = parseInt(document.getElementById('estimasi').value);
+        const harga = parseInt(select.options[select.selectedIndex].dataset.harga);
 
-        if (!nama || !telp || isNaN(qty)) return alert("Data harus lengkap, Bosque!");
+        if(!nama || !telp) return alert("Nama & WA wajib diisi!");
 
-        shopRef.push({
-            nama, telp, qty,
-            jenis: sel.value,
+        // Waktu selesai = waktu sekarang + (menit * 60000 ms)
+        const targetTime = Date.now() + (est * 60000);
+
+        rootRef.push({
+            nama, telp, qty, targetTime,
+            jenis: select.value,
             total: harga * qty,
-            foto: base64Image,
+            foto: fotoBase64,
             status: "Antri",
-            time: Date.now()
-        }).then(() => {
-            // Reset Form
-            document.getElementById('namaPelanggan').value = '';
-            document.getElementById('noTelepon').value = '';
-            document.getElementById('fileInput').value = '';
-            document.getElementById('previewBox').style.display = 'none';
-            base64Image = "";
-            alert("Pesanan Masuk!");
+            date: new Date().toLocaleDateString('en-CA') // YYYY-MM-DD
         });
+
+        document.getElementById('nama').value = "";
+        document.getElementById('telp').value = "";
+        fotoBase64 = "";
     }
 
-    // 5. LISTENER REALTIME & AUTO-PRINT LOGIC
-    shopRef.on('value', (snapshot) => {
-        const data = snapshot.val();
-        const tbody = document.getElementById('tabelBody');
-        tbody.innerHTML = '';
-        let totalOmzet = 0;
+    // Update Tampilan & Countdown setiap detik
+    setInterval(() => {
+        rootRef.once('value', (snap) => {
+            renderTable(snap.val());
+        });
+    }, 10000); // Update tiap 10 detik biar gak berat
 
-        if (data) {
-            Object.keys(data).forEach(key => {
-                const item = data[key];
-                totalOmzet += item.total;
-                const sClass = item.status === "Antri" ? "status-antri" : (item.status === "Proses" ? "status-proses" : "status-selesai");
-                
-                tbody.innerHTML += `
-                    <tr>
-                        <td data-label="Foto">${item.foto ? `<img src="${item.foto}" class="foto-thumbnail" onclick="viewFullImage('${item.foto}')">` : '❌'}</td>
-                        <td data-label="Nama">${item.nama}</td>
-                        <td data-label="No. Telp" id="telp-${key}">********</td>
-                        <td data-label="Status">
-                            <button class="status-badge ${sClass}" onclick="updateStatus('${key}', '${item.status}')">${item.status}</button>
-                        </td>
-                        <td data-label="Total">Rp ${item.total.toLocaleString()}</td>
-                        <td data-label="Aksi">
-                            <button class="btn-action btn-wa" onclick="kirimWA('${item.telp}', '${item.nama}', '${item.total}', '${item.status}')">WA</button>
-                            <button class="btn-action btn-view" onclick="lihatTelp('${key}', '${item.telp}')">Lihat</button>
-                            <button class="btn-action btn-delete" onclick="hapusSecure('${key}')">Del</button>
-                        </td>
-                    </tr>`;
-            });
-        }
-        document.getElementById('totalDisplay').innerText = totalOmzet.toLocaleString();
-    });
+    rootRef.on('value', (snap) => renderTable(snap.val()));
 
-    // AUTO-PRINT TRIGGER (Hanya untuk data baru)
-    shopRef.limitToLast(1).on('child_added', (snapshot) => {
-        if (isInitialLoad) return; // Jangan print data lama pas baru buka web
-        const pesanan = snapshot.val();
-        if (confirm(`Ada orderan baru dari ${pesanan.nama}! Print Struk sekarang?`)) {
-            printStruk(pesanan);
-        }
-    });
+    function renderTable(data) {
+        const tbody = document.getElementById('listOrder');
+        const today = new Date().toLocaleDateString('en-CA');
+        tbody.innerHTML = "";
+        let totalHariIni = 0;
 
-    shopRef.once('value', () => { isInitialLoad = false; });
+        if(!data) return;
 
-    // 6. FUNGSI ACTIONS (PIN PROTECTED)
-    function updateStatus(key, cur) {
-        if (prompt("Masukkan PIN Admin untuk ganti status:") === ADMIN_PIN) {
-            const next = cur === "Antri" ? "Proses" : (cur === "Proses" ? "Selesai" : "Antri");
-            db.ref('pesanan_nando/' + key).update({ status: next });
-        } else { alert("PIN Salah!"); }
+        Object.keys(data).forEach(key => {
+            const item = data[key];
+            if(item.date === today) totalHariIni += item.total;
+
+            // Hitung Countdown
+            const sisaMs = item.targetTime - Date.now();
+            let sisaText = "Selesai!";
+            if(sisaMs > 0 && item.status !== "Selesai") {
+                const min = Math.floor(sisaMs / 60000);
+                const sec = Math.floor((sisaMs % 60000) / 1000);
+                sisaText = `${min}m ${sec}s`;
+            }
+
+            const sClass = item.status === "Antri" ? "bg-antri" : (item.status === "Proses" ? "bg-proses" : "bg-selesai");
+
+            tbody.innerHTML += `
+                <tr>
+                    <td data-label="Preview">${item.foto ? `<img src="${item.foto}" style="width:40px;border-radius:4px">` : '❌'}</td>
+                    <td data-label="Nama">${item.nama}</td>
+                    <td data-label="Status">
+                        <button class="badge ${sClass}" onclick="gantiStatus('${key}', '${item.status}')">${item.status}</button>
+                    </td>
+                    <td data-label="Estimasi">${item.status === "Selesai" ? "✅" : sisaText}</td>
+                    <td data-label="Total">Rp ${item.total.toLocaleString()}</td>
+                    <td data-label="Opsi">
+                        <button class="btn-action btn-wa" onclick="waBuyer('${item.telp}', '${item.nama}', '${item.status}')">WA</button>
+                        <button class="btn-action btn-delete" onclick="hapusData('${key}')">Del</button>
+                    </td>
+                </tr>
+            `;
+        });
+        document.getElementById('omzet').innerText = totalHariIni.toLocaleString();
     }
 
-    function lihatTelp(key, no) {
-        if (prompt("PIN Admin untuk intip nomor:") === ADMIN_PIN) {
-            document.getElementById(`telp-${key}`).innerText = no;
-        } else { alert("PIN Salah!"); }
+    function gantiStatus(key, cur) {
+        if(prompt("PIN Admin:") !== PIN) return alert("Salah!");
+        const next = cur === "Antri" ? "Proses" : (cur === "Proses" ? "Selesai" : "Antri");
+        rootRef.child(key).update({ status: next });
     }
 
-    function hapusSecure(key) {
-        if (prompt("PIN Admin untuk hapus data:") === ADMIN_PIN) {
-            if (confirm("Yakin mau hapus permanen?")) db.ref('pesanan_nando/' + key).remove();
-        } else { alert("PIN Salah!"); }
+    function waBuyer(telp, nama, status) {
+        let clean = telp.replace(/\D/g,'');
+        if(clean.startsWith('0')) clean = '62' + clean.slice(1);
+        let msg = `Halo ${nama}, pesanan print kamu sedang kami *${status}*. `;
+        if(status === "Selesai") msg = `Halo ${nama}, pesanan print kamu sudah *SELESAI*. Silakan diambil ya!`;
+        window.open(`https://wa.me/${clean}?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
-    // 7. FUNGSI WHATSAPP
-    function kirimWA(telp, nama, total, status) {
-        let cleanTelp = telp.replace(/\D/g, '');
-        if (cleanTelp.startsWith('0')) cleanTelp = '62' + cleanTelp.slice(1);
-        const msg = `Halo ${nama}, status pesanan print kamu: *${status}*. Total: Rp ${total}. Terima kasih sudah order di Nando Print!`;
-        window.open(`https://wa.me/${cleanTelp}?text=${encodeURIComponent(msg)}`, '_blank');
-    }
-
-    // 8. FUNGSI PRINT STRUK SEMI-OTOMATIS
-    function printStruk(item) {
-        const pWin = window.open('', '_blank', 'width=300,height=600');
-        pWin.document.write(`
-            <html><head><style>
-                body { font-family: 'Courier New'; width: 58mm; padding: 5px; font-size: 12px; }
-                .line { border-top: 1px dashed #000; margin: 5px 0; }
-                center { font-weight: bold; font-size: 14px; }
-            </style></head>
-            <body>
-                <center>NANDO PRINT<br>SOLUTIONS</center>
-                <div class="line"></div>
-                Tgl: ${new Date().toLocaleString('id-ID')}<br>
-                Plg: ${item.nama}<br>
-                Item: ${item.jenis} (${item.qty} lbr)<br>
-                <div class="line"></div>
-                <b>TOTAL: Rp ${item.total.toLocaleString()}</b><br>
-                Status: ${item.status}<br>
-                <div class="line"></div>
-                <center>TERIMA KASIH</center>
-            </body></html>
-        `);
-        pWin.document.close();
-        setTimeout(() => { pWin.print(); pWin.close(); }, 500);
-    }
-
-    function viewFullImage(base64) {
-        const win = window.open();
-        win.document.write(`<img src="${base64}" style="max-width:100%">`);
+    function hapusData(key) {
+        if(prompt("PIN Admin:") === PIN) rootRef.child(key).remove();
     }
 </script>
 </body>
