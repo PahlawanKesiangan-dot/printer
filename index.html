@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nando Print Solution - Cloud Sync</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+
+    <style>
+        /* CSS Mewah Lu - Gue pertahankan biar tetep estetik */
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0; padding: 20px; min-height: 100vh;
+        }
+        .container {
+            max-width: 1100px; margin: 0 auto; background: white;
+            padding: 40px; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        .header { text-align: center; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 3px solid #667eea; }
+        .header h1 { color: #2c3e50; font-size: 2.5em; margin: 0; }
+        .main-content { display: grid; grid-template-columns: 1fr 2fr; gap: 40px; }
+        .input-section { background: #f8f9fa; padding: 30px; border-radius: 10px; border: 1px solid #e9ecef; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #34495e; }
+        .form-group input, .form-group select { width: 100%; padding: 12px 15px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; }
+        .btn-submit {
+            width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: 600; cursor: pointer;
+        }
+        .table-container { overflow-x: auto; border-radius: 10px; box-shadow: 0 2px 15px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        thead { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
+        .btn-delete { background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; }
+        .total-section {
+            margin-top: 30px; background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            padding: 25px; border-radius: 10px; color: white; display: flex; justify-content: space-between; align-items: center;
+        }
+        .total-amount { font-size: 2em; font-weight: 700; }
+        .footer { text-align: center; margin-top: 40px; color: #2c3e50; font-size: 0.9em; }
+        .toast {
+            visibility: hidden; min-width: 280px; background-color: #27ae60; color: #fff;
+            text-align: center; border-radius: 8px; padding: 16px; position: fixed;
+            z-index: 1001; left: 50%; bottom: 30px; transform: translateX(-50%);
+        }
+        .toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+        @media (max-width: 768px) { .main-content { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<div id="toast" class="toast">✅ Pesanan masuk ke Cloud!</div>
+
+<div class="container">
+    <div class="header">
+        <h1>🖨️ Nando Print Solution</h1>
+        <p>Copyright © 2026 Nando - Data tersinkron otomatis</p>
+    </div>
+
+    <div class="main-content">
+        <div class="input-section">
+            <h2>Input Pesanan</h2>
+            <div class="form-group">
+                <label>Nama Pelanggan</label>
+                <input type="text" id="namaPelanggan" placeholder="Nama si doi...">
+            </div>
+            <div class="form-group">
+                <label>Jenis Kertas</label>
+                <select id="jenisKertas">
+                    <option value="" disabled selected>Pilih jenis kertas...</option>
+                    <option value="A4" data-harga="1000">Kertas A4 (Rp 1.000)</option>
+                    <option value="F4" data-harga="1000">Kertas F4 (Rp 1.000)</option>
+                    <option value="A4 Foto" data-harga="3000">Kertas A4 Foto (Rp 3.000)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Jumlah Lembar</label>
+                <input type="number" id="jumlahLembar" min="1" value="1">
+            </div>
+            <button type="button" class="btn-submit" onclick="simpanKeCloud()">Tambah Pesanan</button>
+        </div>
+
+        <div class="output-section">
+            <h2>📋 Riwayat Pesanan (Realtime)</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nama</th>
+                            <th>Jenis</th>
+                            <th>Qty</th>
+                            <th>Total</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelBody"></tbody>
+                </table>
+            </div>
+            <div class="total-section">
+                <h3>💵 Total Omzet</h3>
+                <div class="total-amount">Rp <span id="totalDisplay">0</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Dibuat dengan rasa bangga dan sedikit trauma masa lalu.</p>
+    </div>
+</div>
+
+<script>
+    // KONFIGURASI FIREBASE LU (Gue ambil dari screenshot lu)
+    const firebaseConfig = {
+        apiKey: "AIzaSyB4CBP0S3dhsxFb17ToVhFFF7Kvjw_7j88",
+        authDomain: "print-nndo.firebaseapp.com",
+        databaseURL: "https://print-nndo-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "print-nndo",
+        storageBucket: "print-nndo.firebasestorage.app",
+        messagingSenderId: "1030448319199",
+        appId: "1:1030448319199:web:1c2680491f95760e88776a"
+    };
+
+    // Inisialisasi Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const shopRef = db.ref('pesanan_nando');
+
+    // MENGAMBIL DATA SECARA REALTIME DARI CLOUD
+    shopRef.on('value', (snapshot) => {
+        const data = snapshot.val();
+        const tbody = document.getElementById('tabelBody');
+        tbody.innerHTML = '';
+        let totalOmzet = 0;
+
+        if (data) {
+            Object.keys(data).forEach(key => {
+                const item = data[key];
+                totalOmzet += item.total;
+                const row = `<tr>
+                    <td>${item.nama}</td>
+                    <td>${item.jenis}</td>
+                    <td>${item.qty}</td>
+                    <td>Rp ${item.total.toLocaleString()}</td>
+                    <td><button class="btn-delete" onclick="hapusData('${key}')">Hapus</button></td>
+                </tr>`;
+                tbody.innerHTML += row;
+            });
+        }
+        document.getElementById('totalDisplay').innerText = totalOmzet.toLocaleString();
+    });
+
+    // FUNGSI SIMPAN KE CLOUD
+    function simpanKeCloud() {
+        const nama = document.getElementById('namaPelanggan').value.trim();
+        const select = document.getElementById('jenisKertas');
+        const qty = parseInt(document.getElementById('jumlahLembar').value);
+
+        if (!nama || select.selectedIndex === 0 || isNaN(qty) || qty < 1) {
+            alert('Lengkapi data dulu, Ngab! Jangan gantung kayak status hubungan lu!');
+            return;
+        }
+
+        const harga = parseInt(select.options[select.selectedIndex].getAttribute('data-harga'));
+        const total = harga * qty;
+
+        // Push data ke Firebase
+        shopRef.push({
+            nama: nama,
+            jenis: select.value,
+            qty: qty,
+            total: total
+        });
+
+        // Reset form
+        document.getElementById('namaPelanggan').value = '';
+        document.getElementById('jenisKertas').selectedIndex = 0;
+        document.getElementById('jumlahLembar').value = 1;
+        showToast();
+    }
+
+    // FUNGSI HAPUS DARI CLOUD
+    function hapusData(key) {
+        if (confirm("Yakin mau hapus? Data bisa dihapus, tapi luka di hati siapa yang tahu?")) {
+            db.ref('pesanan_nando/' + key).remove();
+        }
+    }
+
+    function showToast() {
+        const x = document.getElementById("toast");
+        x.className = "toast show";
+        setTimeout(() => { x.className = x.className.replace("show", ""); }, 3000);
+    }
+</script>
+</body>
+</html>
