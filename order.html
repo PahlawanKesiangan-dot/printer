@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order - Nando Print Solutions</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: #f4f7f6; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 15px; }
+        .card { background: white; width: 100%; max-width: 450px; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 8px solid #667eea; }
+        .header { text-align: center; margin-bottom: 25px; }
+        .header h1 { margin: 0; font-size: 24px; color: #333; }
+        .header p { color: #777; font-size: 14px; margin-top: 5px; }
+        
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #444; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; border: 2px solid #eee; border-radius: 10px; font-size: 16px; outline: none; transition: 0.3s; }
+        .form-group input:focus { border-color: #667eea; }
+        
+        .btn-send { width: 100%; padding: 15px; background: #667eea; color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 18px; cursor: pointer; transition: 0.3s; box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3); }
+        .btn-send:hover { background: #5a67d8; transform: translateY(-2px); }
+        .btn-send:active { transform: translateY(0); }
+
+        #previewContainer { display: none; margin-top: 15px; text-align: center; border: 2px dashed #ddd; padding: 10px; border-radius: 10px; }
+        #imgPreview { max-width: 100%; border-radius: 8px; max-height: 200px; }
+        
+        .success-msg { display: none; text-align: center; padding: 20px; }
+        .success-msg h2 { color: #27ae60; }
+    </style>
+</head>
+<body>
+
+<div class="card" id="formCard">
+    <div class="header">
+        <h1>🖨️ Nando Print</h1>
+        <p>Silakan isi data untuk cetakan Anda</p>
+    </div>
+
+    <div class="form-group">
+        <label>Nama Anda</label>
+        <input type="text" id="custNama" placeholder="Contoh: Budi">
+    </div>
+
+    <div class="form-group">
+        <label>Nomor WhatsApp</label>
+        <input type="number" id="custWA" placeholder="08123xxx">
+    </div>
+
+    <div class="form-group">
+        <label>Pilih Kertas</label>
+        <select id="custJenis">
+            <option value="A4" data-harga="1000">HVS A4 (Rp 1.000)</option>
+            <option value="F4" data-harga="1000">HVS F4 (Rp 1.000)</option>
+            <option value="Foto A4" data-harga="3000">Kertas Foto (Rp 3.000)</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Jumlah Lembar</label>
+        <input type="number" id="custQty" value="1" min="1">
+    </div>
+
+    <div class="form-group">
+        <label>📷 Upload File/Foto</label>
+        <input type="file" id="custFile" accept="image/*" onchange="previewFoto()">
+        <div id="previewContainer">
+            <img id="imgPreview" src="">
+        </div>
+    </div>
+
+    <button class="btn-send" id="btnKirim" onclick="kirimOrder()">🚀 Kirim Pesanan</button>
+</div>
+
+<div class="card success-msg" id="successCard">
+    <h2>✅ Berhasil Terkirim!</h2>
+    <p>Data Anda sudah masuk ke sistem kami. Silakan tunggu sebentar, kami akan segera memprosesnya.</p>
+    <p style="font-size: 12px; color: #888;">"Terima kasih sudah memesan, jangan lupa bahagia walau hanya sebentar."</p>
+    <button class="btn-send" style="background: #27ae60; margin-top: 20px;" onclick="location.reload()">Pesan Lagi</button>
+</div>
+
+<script>
+    // MASUKKAN CONFIG FIREBASE LU DI SINI (Sama kayak yang di Admin)
+    const firebaseConfig = {
+        apiKey: "AIzaSyB4CBP0S3dhsxFb17ToVhFFF7Kvjw_7j88",
+        authDomain: "print-nndo.firebaseapp.com",
+        databaseURL: "https://print-nndo-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "print-nndo",
+        storageBucket: "print-nndo.firebasestorage.app",
+        appId: "1:1030448319199:web:1c2680491f95760e88776a"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    let fileBase64 = "";
+
+    function previewFoto() {
+        const file = document.getElementById('custFile').files[0];
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            fileBase64 = reader.result;
+            document.getElementById('imgPreview').src = fileBase64;
+            document.getElementById('previewContainer').style.display = 'block';
+        };
+        if(file) reader.readAsDataURL(file);
+    }
+
+    function kirimOrder() {
+        const nama = document.getElementById('custNama').value;
+        const telp = document.getElementById('custWA').value;
+        const select = document.getElementById('custJenis');
+        const qty = parseInt(document.getElementById('custQty').value);
+        const harga = parseInt(select.options[select.selectedIndex].dataset.harga);
+        const btn = document.getElementById('btnKirim');
+
+        if(!nama || !telp) return alert("Nama & WhatsApp wajib diisi ya!");
+
+        btn.disabled = true;
+        btn.innerText = "Sedang Mengirim...";
+
+        // Set estimasi default 10 menit
+        const targetTime = Date.now() + (10 * 60000);
+
+        db.ref('pesanan_nando').push({
+            nama: nama,
+            telp: telp,
+            jenis: select.value,
+            qty: qty,
+            total: harga * qty,
+            foto: fileBase64,
+            status: "Antri",
+            targetTime: targetTime,
+            date: new Date().toLocaleDateString('en-CA')
+        }).then(() => {
+            document.getElementById('formCard').style.display = 'none';
+            document.getElementById('successCard').style.display = 'block';
+        }).catch(err => {
+            alert("Gagal kirim: " + err);
+            btn.disabled = false;
+            btn.innerText = "🚀 Kirim Pesanan";
+        });
+    }
+</script>
+</body>
+</html>
