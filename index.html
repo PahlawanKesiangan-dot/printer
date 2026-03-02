@@ -3,91 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nando Print Solution - Anti Berantakan</title>
+    <title>Nando Print Solution - Pro Version</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
     <style>
-        /* CSS DASAR */
         * { box-sizing: border-box; }
         body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin: 0; padding: 10px; min-height: 100vh; }
         .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
-        
-        /* LAYOUT RESPONSIVE */
-        .main-content { display: grid; grid-template-columns: 1fr 2.5fr; gap: 20px; }
-        
+        .main-content { display: grid; grid-template-columns: 1fr 3fr; gap: 20px; }
         .input-section { background: #f8f9fa; padding: 20px; border-radius: 10px; border: 1px solid #ddd; height: fit-content; }
         .form-group { margin-bottom: 12px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 14px; }
         .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; }
-        
         .btn-submit { width: 100%; padding: 15px; background: #667eea; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-submit:hover { background: #764ba2; }
-
-        /* TABEL & PRIVASI */
+        
+        /* TABLE & CARDS */
         .table-container { margin-top: 10px; border-radius: 10px; overflow: hidden; }
         table { width: 100%; border-collapse: collapse; background: white; }
         thead { background: #667eea; color: white; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 13px; }
         
-        .foto-thumbnail { width: 50px; height: 50px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; }
-        .btn-action { padding: 6px 10px; border-radius: 5px; border: none; color: white; cursor: pointer; font-size: 11px; font-weight: bold; margin: 2px 0; }
+        /* STATUS STYLING */
+        .status-badge { padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; color: white; cursor: pointer; border: none; }
+        .status-antri { background: #95a5a6; }
+        .status-proses { background: #f39c12; }
+        .status-selesai { background: #27ae60; }
+
+        .btn-action { padding: 6px 10px; border-radius: 5px; border: none; color: white; cursor: pointer; font-size: 11px; font-weight: bold; margin: 2px 0; display: inline-block; text-decoration: none; }
+        .btn-wa { background: #25d366; }
         .btn-view { background: #3498db; }
         .btn-delete { background: #ff4757; }
+        .foto-thumbnail { width: 50px; height: 50px; object-fit: cover; border-radius: 8px; }
 
-        .total-section { margin-top: 20px; background: #27ae60; color: white; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; }
-        
-        /* MAGIC MOBILE: Ngubah Tabel jadi List Card di HP */
         @media (max-width: 768px) {
             .main-content { grid-template-columns: 1fr; }
-            .container { padding: 15px; }
-            
-            thead { display: none; } /* Sembunyiin Header Tabel */
-            
-            tr { 
-                display: block; 
-                margin-bottom: 15px; 
-                border: 1px solid #ddd; 
-                border-radius: 10px; 
-                padding: 10px; 
-                background: #fff;
-                box-shadow: 2px 2px 10px rgba(0,0,0,0.05);
-            }
-            
-            td { 
-                display: flex; 
-                justify-content: space-between; 
-                align-items: center; 
-                border: none; 
-                padding: 8px 5px; 
-                font-size: 13px;
-                text-align: right;
-            }
-
-            td::before { 
-                content: attr(data-label); 
-                font-weight: bold; 
-                text-transform: uppercase; 
-                color: #667eea;
-                font-size: 11px;
-                text-align: left;
-            }
-
-            .foto-thumbnail { width: 60px; height: 60px; }
-            .btn-action { width: 48%; padding: 10px; } /* Tombol jadi gede di HP */
+            thead { display: none; }
+            tr { display: block; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 10px; padding: 10px; box-shadow: 2px 2px 10px rgba(0,0,0,0.05); }
+            td { display: flex; justify-content: space-between; align-items: center; border: none; padding: 8px 5px; text-align: right; }
+            td::before { content: attr(data-label); font-weight: bold; color: #667eea; font-size: 11px; }
+            .btn-action { width: 30%; text-align: center; }
         }
-
-        .preview-box { margin-top: 10px; display: none; text-align: center; }
-        #imgPreview { max-width: 100px; border-radius: 8px; border: 1px dashed #667eea; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div style="text-align: center; margin-bottom: 20px;">
-        <h1 style="margin:0; color:#2c3e50;">🖨️ Nando Print</h1>
-        <p style="color:#7f8c8d; font-size: 13px;">Data Terkunci, Privasi Terjaga, Hati Saja yang Terbuka</p>
+        <h1 style="margin:0; color:#2c3e50;">🖨️ Nando Print Pro</h1>
+        <p style="color:#7f8c8d; font-size: 13px;">Kelola Pesanan Tanpa Drama Masa Lalu</p>
     </div>
 
     <div class="main-content">
@@ -97,13 +62,12 @@
                 <input type="text" id="namaPelanggan" placeholder="...">
             </div>
             <div class="form-group">
-                <label>No. Telepon (WA)</label>
+                <label>No. WhatsApp</label>
                 <input type="text" id="noTelepon" placeholder="0812...">
             </div>
             <div class="form-group">
                 <label>Jenis Kertas</label>
                 <select id="jenisKertas">
-                    <option value="" disabled selected>Pilih...</option>
                     <option value="A4" data-harga="1000">A4 (1rb)</option>
                     <option value="F4" data-harga="1000">F4 (1rb)</option>
                     <option value="A4 Foto" data-harga="3000">Foto A4 (3rb)</option>
@@ -114,9 +78,8 @@
                 <input type="number" id="jumlahLembar" value="1" min="1">
             </div>
             <div class="form-group">
-                <label>📷 Foto (Opsional)</label>
+                <label>📷 Foto</label>
                 <input type="file" id="fileInput" accept="image/*" onchange="handleFile()">
-                <div class="preview-box" id="previewBox"><img id="imgPreview" src=""></div>
             </div>
             <button class="btn-submit" onclick="tambahKeCloud()">🚀 Simpan Ke Cloud</button>
         </div>
@@ -129,8 +92,7 @@
                             <th>Foto</th>
                             <th>Nama</th>
                             <th>No. Telp</th>
-                            <th>Jenis</th>
-                            <th>Qty</th>
+                            <th>Status</th>
                             <th>Total</th>
                             <th>Aksi</th>
                         </tr>
@@ -138,120 +100,100 @@
                     <tbody id="tabelBody"></tbody>
                 </table>
             </div>
-            <div class="total-section">
-                <span>Total Omzet:</span>
-                <span style="font-size: 1.2em; font-weight: bold;">Rp <span id="totalDisplay">0</span></span>
-            </div>
         </div>
     </div>
 </div>
 
 <script>
-    // KONFIGURASI FIREBASE
     const firebaseConfig = {
         apiKey: "AIzaSyB4CBP0S3dhsxFb17ToVhFFF7Kvjw_7j88",
         authDomain: "print-nndo.firebaseapp.com",
         databaseURL: "https://print-nndo-default-rtdb.asia-southeast1.firebasedatabase.app",
         projectId: "print-nndo",
         storageBucket: "print-nndo.firebasestorage.app",
-        messagingSenderId: "1030448319199",
         appId: "1:1030448319199:web:1c2680491f95760e88776a"
     };
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const shopRef = db.ref('pesanan_nando');
-
+    const ADMIN_PIN = "2509"; 
     let base64Image = "";
-    const ADMIN_PIN = "1234"; // GANTI PIN LU DI SINI!
 
     function handleFile() {
         const file = document.getElementById('fileInput').files[0];
         const reader = new FileReader();
-        reader.onloadend = () => {
-            base64Image = reader.result;
-            document.getElementById('imgPreview').src = base64Image;
-            document.getElementById('previewBox').style.display = 'block';
-        };
+        reader.onloadend = () => base64Image = reader.result;
         if (file) reader.readAsDataURL(file);
     }
 
     function tambahKeCloud() {
-        const nama = document.getElementById('namaPelanggan').value.trim();
-        const telp = document.getElementById('noTelepon').value.trim();
-        const select = document.getElementById('jenisKertas');
-        const qty = parseInt(document.getElementById('jumlahLembar').value);
+        const nama = document.getElementById('namaPelanggan').value;
+        const telp = document.getElementById('noTelepon').value;
+        const sel = document.getElementById('jenisKertas');
+        const qty = document.getElementById('jumlahLembar').value;
+        const harga = sel.options[sel.selectedIndex].getAttribute('data-harga');
 
-        if (!nama || !telp || select.selectedIndex === 0) {
-            alert("Lengkapi datanya, Bos!");
-            return;
-        }
+        if(!nama || !telp) return alert("Isi nama & WA dulu!");
 
-        const harga = parseInt(select.options[select.selectedIndex].getAttribute('data-harga'));
-        
         shopRef.push({
-            nama: nama,
-            telp: telp,
-            jenis: select.value,
-            qty: qty,
+            nama, telp, qty, 
+            jenis: sel.value,
             total: harga * qty,
-            foto: base64Image
+            foto: base64Image,
+            status: "Antri" // Default status baru
         });
-
-        // Reset
-        document.getElementById('namaPelanggan').value = '';
-        document.getElementById('noTelepon').value = '';
-        document.getElementById('fileInput').value = '';
-        document.getElementById('previewBox').style.display = 'none';
-        base64Image = "";
+        
+        location.reload(); // Refresh buat bersihin input
     }
 
-    shopRef.on('value', (snapshot) => {
-        const data = snapshot.val();
+    shopRef.on('value', (snap) => {
+        const data = snap.val();
         const tbody = document.getElementById('tabelBody');
         tbody.innerHTML = '';
-        let total = 0;
-
         if (data) {
             Object.keys(data).forEach(key => {
                 const item = data[key];
-                total += item.total;
+                const sClass = item.status === "Antri" ? "status-antri" : (item.status === "Proses" ? "status-proses" : "status-selesai");
+                
                 tbody.innerHTML += `
                     <tr>
-                        <td data-label="Foto">${item.foto ? `<img src="${item.foto}" class="foto-thumbnail">` : '❌'}</td>
+                        <td data-label="Foto"><img src="${item.foto || ''}" class="foto-thumbnail"></td>
                         <td data-label="Nama">${item.nama}</td>
-                        <td data-label="No. Telp" id="telp-${key}">********</td>
-                        <td data-label="Jenis">${item.jenis}</td>
-                        <td data-label="Qty">${item.qty}</td>
+                        <td data-label="Telp" id="telp-${key}">********</td>
+                        <td data-label="Status">
+                            <button class="status-badge ${sClass}" onclick="updateStatus('${key}', '${item.status}')">${item.status}</button>
+                        </td>
                         <td data-label="Total">Rp ${item.total.toLocaleString()}</td>
                         <td data-label="Aksi">
+                            <button class="btn-action btn-wa" onclick="kirimWA('${item.telp}', '${item.nama}', '${item.total}', '${item.status}')">WA</button>
                             <button class="btn-action btn-view" onclick="lihatTelp('${key}', '${item.telp}')">Lihat</button>
-                            <button class="btn-action btn-delete" onclick="hapusSecure('${key}')">Hapus</button>
+                            <button class="btn-action btn-delete" onclick="hapusSecure('${key}')">Del</button>
                         </td>
                     </tr>`;
             });
         }
-        document.getElementById('totalDisplay').innerText = total.toLocaleString();
     });
 
-    function lihatTelp(key, noAsli) {
-        const pin = prompt("PIN Admin untuk intip nomor:");
-        if (pin === ADMIN_PIN) {
-            document.getElementById(`telp-${key}`).innerText = noAsli;
-        } else if (pin !== null) {
-            alert("❌ PIN Salah! Lu bukan bosnya ya?");
-        }
+    function updateStatus(key, cur) {
+        const pin = prompt("PIN Admin untuk ganti status:");
+        if (pin !== ADMIN_PIN) return alert("Salah PIN!");
+        const next = cur === "Antri" ? "Proses" : (cur === "Proses" ? "Selesai" : "Antri");
+        db.ref('pesanan_nando/' + key).update({ status: next });
+    }
+
+    function kirimWA(telp, nama, total, status) {
+        let msg = `Halo ${nama}, pesanan print kamu statusnya: *${status}*. Total: Rp ${total}. `;
+        if(status === "Selesai") msg += "Silakan diambil ya!";
+        window.open(`https://wa.me/${telp.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    function lihatTelp(key, no) {
+        if (prompt("PIN Admin:") === ADMIN_PIN) document.getElementById(`telp-${key}`).innerText = no;
     }
 
     function hapusSecure(key) {
-        const pin = prompt("PIN Admin untuk hapus data:");
-        if (pin === ADMIN_PIN) {
-            if (confirm("Yakin hapus? Data ilang, kenangan tetep ada.")) {
-                db.ref('pesanan_nando/' + key).remove();
-            }
-        } else if (pin !== null) {
-            alert("❌ PIN Salah!");
-        }
+        if (prompt("PIN Admin:") === ADMIN_PIN) db.ref('pesanan_nando/' + key).remove();
     }
 </script>
 </body>
