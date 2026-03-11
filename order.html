@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Nando Print - Command Centre</title>
+    <title>Admin Nando Print - Ultimate Clean</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
@@ -15,12 +15,20 @@
         body { background: #f0f2f5; margin: 0; padding: 20px; color: #1a1a1a; }
         .container { max-width: 1400px; margin: 0 auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.05); }
         
-        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #667eea; padding-bottom: 15px; }
+        .header { text-align: center; margin-bottom: 25px; border-bottom: 2px solid #667eea; padding-bottom: 15px; }
         .header h1 { margin: 0; color: #4b6cb7; letter-spacing: -1px; }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        /* Panel Stok Kertas */
+        .stok-panel { 
+            background: #f8f9fa; padding: 15px; border-radius: 12px; 
+            margin-bottom: 20px; border: 1px solid #eee; 
+            display: flex; gap: 20px; align-items: center; justify-content: center;
+        }
+        .stok-panel label { font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         thead { background: #4b6cb7; color: white; }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #edf2f7; font-size: 14px; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #edf2f7; font-size: 13px; }
         
         .photo-grid { display: flex; gap: 5px; flex-wrap: wrap; max-width: 250px; }
         .img-thumb { 
@@ -38,33 +46,19 @@
         .btn-wa { background: #25d366; }
         .btn-del { background: #e74c3c; }
 
-        .omzet-box { margin-top: 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .omzet-box { 
+            margin-top: 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; padding: 25px; border-radius: 15px; 
+            display: flex; justify-content: space-between; align-items: center; 
+        }
 
-        /* ==========================================
-           FITUR FIX PRINT: CSS KHUSUS CETAK
-        ========================================== */
-        #printArea { display: none; } /* Sembunyi di layar biasa */
-
+        /* CSS KHUSUS PRINT */
+        #printArea { display: none; }
         @media print {
-            /* Sembunyikan SEMUA elemen kecuali area print */
             body * { visibility: hidden; }
             #printArea, #printArea * { visibility: visible; }
-            
-            #printArea { 
-                position: absolute; 
-                left: 0; 
-                top: 0; 
-                width: 100%; 
-                display: block !important;
-                text-align: center;
-            }
-
-            #printArea img { 
-                max-width: 100%; 
-                height: auto; 
-                margin: 0 auto;
-                display: block;
-            }
+            #printArea { position: absolute; left: 0; top: 0; width: 100%; text-align: center; display: block !important; }
+            #printArea img { max-width: 100%; height: auto; display: block; margin: 0 auto; }
         }
     </style>
 </head>
@@ -73,7 +67,14 @@
 <div class="container">
     <div class="header">
         <h1>🚀 Nando Print - Command Center</h1>
-        <p>Manajemen Pesanan & Cetak Otomatis (Anti-Zonk)</p>
+        <p>Manajemen Pesanan & Kontrol Stok</p>
+    </div>
+
+    <div class="stok-panel">
+        <strong>📦 Kontrol Stok:</strong>
+        <label><input type="checkbox" id="stokA4" onchange="updateStok('A4', this.checked)"> A4 Ready</label>
+        <label><input type="checkbox" id="stokF4" onchange="updateStok('F4', this.checked)"> F4 Ready</label>
+        <label><input type="checkbox" id="stokFoto" onchange="updateStok('Foto A4', this.checked)"> Foto Ready</label>
     </div>
 
     <div style="overflow-x: auto;">
@@ -83,14 +84,13 @@
                     <th>Waktu</th>
                     <th>Nama Pelanggan</th>
                     <th>Ukuran/Jenis</th>
-                    <th>File (Klik utk Cetak)</th>
+                    <th>File (Klik Cetak)</th>
                     <th>Status</th>
-                    <th>Total Biaya</th>
-                    <th>Tindakan</th>
+                    <th>Total</th>
+                    <th>Opsi</th>
                 </tr>
             </thead>
-            <tbody id="listOrder">
-                </tbody>
+            <tbody id="listOrder"></tbody>
         </table>
     </div>
 
@@ -99,10 +99,7 @@
             <h3 style="margin:0; opacity: 0.8; font-size: 14px;">TOTAL PENDAPATAN HARI INI</h3>
             <h2 style="margin:5px 0 0; font-size: 32px;">Rp <span id="omzet">0</span></h2>
         </div>
-        <div style="text-align: right;">
-            <p style="margin:0; font-size: 12px;">PIN Aktif: <strong>900</strong></p>
         </div>
-    </div>
 </div>
 
 <div id="printArea"></div>
@@ -120,98 +117,98 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const rootRef = db.ref('pesanan_nando');
+    const stokRef = db.ref('stok_kertas');
     const PIN_ADMIN = "900";
 
+    // 1. MONITOR STOK KERTAS
+    stokRef.on('value', (snap) => {
+        const stok = snap.val() || { "A4": true, "F4": true, "Foto A4": true };
+        document.getElementById('stokA4').checked = stok["A4"];
+        document.getElementById('stokF4').checked = stok["F4"];
+        document.getElementById('stokFoto').checked = stok["Foto A4"];
+    });
+
+    function updateStok(jenis, status) {
+        const pin = prompt("Masukkan PIN Admin untuk ubah stok:");
+        if (pin === PIN_ADMIN) {
+            stokRef.child(jenis).set(status);
+        } else {
+            alert("PIN Salah!");
+            location.reload();
+        }
+    }
+
+    // 2. MONITOR PESANAN
     rootRef.on('value', (snapshot) => {
         const data = snapshot.val();
         const tbody = document.getElementById('listOrder');
         const today = new Date().toLocaleDateString('en-CA');
         let omzetHariIni = 0;
-        
         tbody.innerHTML = "";
 
         if (data) {
             Object.keys(data).reverse().forEach(key => {
                 const item = data[key];
                 if(item.date === today) omzetHariIni += (item.total || 0);
-
-                const statusClass = item.status === "Antri" ? "bg-antri" : (item.status === "Proses" ? "bg-proses" : "bg-selesai");
+                const sClass = item.status === "Antri" ? "bg-antri" : (item.status === "Proses" ? "bg-proses" : "bg-selesai");
                 
                 let photoHTML = "📄";
                 if (item.fotos && Array.isArray(item.fotos)) {
                     photoHTML = `<div class="photo-grid">` + 
-                        item.fotos.map(img => `<img src="${img}" class="img-thumb" onclick="cetakSekarang('${img}')" title="Klik untuk Cetak">`).join('') + 
+                        item.fotos.map(img => `<img src="${img}" class="img-thumb" onclick="cetakSekarang('${img}')">`).join('') + 
                         `</div>`;
                 } else if (item.foto) {
-                    photoHTML = `<img src="${item.foto}" class="img-thumb" onclick="cetakSekarang('${item.foto}')" title="Klik untuk Cetak">`;
+                    photoHTML = `<img src="${item.foto}" class="img-thumb" onclick="cetakSekarang('${item.foto}')">`;
                 }
 
                 tbody.innerHTML += `
                     <tr>
                         <td>${new Date(item.targetTime - (10 * 60000)).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
                         <td><strong>${item.nama}</strong><br><small>${item.telp}</small></td>
-                        <td><span style="color:#4b6cb7; font-weight:600">${item.jenis || 'A4'}</span><br><small>${item.qty || 1} Lembar</small></td>
+                        <td><span style="color:#4b6cb7; font-weight:600">${item.jenis}</span><br><small>${item.qty} Lembar</small></td>
                         <td>${photoHTML}</td>
-                        <td><button class="badge ${statusClass}" onclick="ubahStatus('${key}', '${item.status}')">${item.status}</button></td>
+                        <td><button class="badge ${sClass}" onclick="ubahStatus('${key}', '${item.status}')">${item.status}</button></td>
                         <td>Rp ${(item.total || 0).toLocaleString()}</td>
                         <td>
                             <button class="btn-action btn-wa" onclick="kontakWA('${item.telp}', '${item.nama}', '${item.status}')">WA</button>
-                            <button class="btn-action btn-del" onclick="hapusPesanan('${key}')">Hapus</button>
+                            <button class="btn-action btn-del" onclick="hapusPesanan('${key}')">Del</button>
                         </td>
-                    </tr>
-                `;
+                    </tr>`;
             });
         }
         document.getElementById('omzet').innerText = omzetHariIni.toLocaleString();
     });
 
-    /* ==========================================
-       FITUR FIX: LOGIKA CETAK ANTI-BLANK
-    ========================================== */
+    // 3. FITUR CETAK ANTI-ZONK
     function cetakSekarang(url) {
         const printArea = document.getElementById('printArea');
-        
-        // Buat elemen gambar sementara
         printArea.innerHTML = `<img src="${url}" id="imgToPrint">`;
-        
         const img = document.getElementById('imgToPrint');
-
-        // Tunggu gambar selesai dimuat oleh browser
         img.onload = function() {
-            // Kasih jeda sedikit lagi biar browser bener-bener siap render preview
-            setTimeout(() => {
-                window.print();
-                printArea.innerHTML = ""; // Bersihkan setelah selesai
-            }, 300);
-        };
-
-        img.onerror = function() {
-            alert("Waduh, Master! Gambarnya gagal dimuat. Coba cek koneksi atau database lu.");
+            setTimeout(() => { window.print(); printArea.innerHTML = ""; }, 300);
         };
     }
 
     function ubahStatus(key, statusLama) {
-        const pin = prompt("Konfirmasi PIN Admin:");
+        const pin = prompt("PIN Admin:");
         if (pin !== PIN_ADMIN) return alert("PIN Salah!");
-        let statusBaru = statusLama === "Antri" ? "Proses" : (statusLama === "Proses" ? "Selesai" : "Antri");
-        rootRef.child(key).update({ status: statusBaru });
+        let next = statusLama === "Antri" ? "Proses" : (statusLama === "Proses" ? "Selesai" : "Antri");
+        rootRef.child(key).update({ status: next });
     }
 
     function hapusPesanan(key) {
-        const pin = prompt("Masukkan PIN Admin untuk menghapus:");
+        const pin = prompt("PIN Admin untuk hapus:");
         if (pin === PIN_ADMIN) {
-            if (confirm("Yakin mau hapus history cuan ini?")) rootRef.child(key).remove();
+            if (confirm("Hapus data ini?")) rootRef.child(key).remove();
         } else if (pin !== null) alert("PIN Salah!");
     }
 
     function kontakWA(telp, nama, status) {
         let hp = telp.replace(/\D/g, '');
         if (hp.startsWith('0')) hp = '62' + hp.slice(1);
-        let pesan = `Halo ${nama}, pesanan print kamu sedang kami *${status}*.`;
-        if(status === "Selesai") pesan = `Halo ${nama}, pesanan print kamu sudah *SELESAI*. Silakan diambil ya!`;
+        let pesan = `Halo ${nama}, pesanan kamu sedang *${status}*.`;
         window.open(`https://wa.me/${hp}?text=${encodeURIComponent(pesan)}`, '_blank');
     }
 </script>
-
 </body>
 </html>
