@@ -3,42 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nando Print - Admin Dashboard</title>
+    <title>Admin Nando Print - Command Centre</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
-    
+
     <style>
-        /* CSS Tetap Sama Seperti Sebelumnya untuk Konsistensi Visual */
-        * { box-sizing: border-box; transition: 0.2s; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 15px; color: #1c1e21; }
-        .container { max-width: 1250px; margin: 0 auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .header { text-align: center; margin-bottom: 25px; border-bottom: 2px solid #667eea; padding-bottom: 10px; }
-        .main-content { display: grid; grid-template-columns: 1fr 3fr; gap: 20px; }
-        .input-section { background: #fafafa; padding: 20px; border-radius: 12px; border: 1px solid #ddd; height: fit-content; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 13px; color: #4b6cb7; }
-        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
-        .btn-submit { width: 100%; padding: 12px; background: #667eea; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .table-container { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        thead { background: #667eea; color: white; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 13px; }
-        .badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; color: white; border: none; cursor: pointer; }
-        .bg-antri { background: #95a5a6; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        
+        * { box-sizing: border-box; transition: 0.3s; font-family: 'Inter', sans-serif; }
+        body { background: #f0f2f5; margin: 0; padding: 20px; color: #1a1a1a; }
+        .container { max-width: 1400px; margin: 0 auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.05); }
+        
+        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #667eea; padding-bottom: 15px; }
+        .header h1 { margin: 0; color: #4b6cb7; letter-spacing: -1px; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        thead { background: #4b6cb7; color: white; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #edf2f7; font-size: 14px; }
+        
+        .photo-grid { display: flex; gap: 5px; flex-wrap: wrap; max-width: 250px; }
+        .img-thumb { 
+            width: 50px; height: 50px; object-fit: cover; border-radius: 6px; 
+            cursor: pointer; border: 2px solid transparent;
+        }
+        .img-thumb:hover { border-color: #667eea; transform: scale(1.1); }
+
+        .badge { padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; border: none; cursor: pointer; color: white; }
+        .bg-antri { background: #adb5bd; }
         .bg-proses { background: #f39c12; }
         .bg-selesai { background: #27ae60; }
-        .btn-action { padding: 6px 10px; border-radius: 6px; border: none; color: white; cursor: pointer; font-size: 11px; margin-right: 3px; }
-        .btn-wa { background: #25d366; }
-        .btn-delete { background: #e74c3c; }
-        .total-card { margin-top: 20px; background: #27ae60; color: white; padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; }
 
-        @media (max-width: 800px) {
-            .main-content { grid-template-columns: 1fr; }
-            thead { display: none; }
-            tr { display: block; border: 1px solid #ddd; margin-bottom: 10px; border-radius: 10px; padding: 10px; }
-            td { display: flex; justify-content: space-between; border: none; padding: 5px; text-align: right; }
-            td::before { content: attr(data-label); font-weight: bold; color: #667eea; }
+        .btn-action { padding: 8px 12px; border-radius: 8px; border: none; color: white; cursor: pointer; font-weight: 600; font-size: 12px; margin-right: 5px; }
+        .btn-wa { background: #25d366; }
+        .btn-del { background: #e74c3c; }
+
+        .omzet-box { margin-top: 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; }
+
+        /* ==========================================
+           FITUR FIX PRINT: CSS KHUSUS CETAK
+        ========================================== */
+        #printArea { display: none; } /* Sembunyi di layar biasa */
+
+        @media print {
+            /* Sembunyikan SEMUA elemen kecuali area print */
+            body * { visibility: hidden; }
+            #printArea, #printArea * { visibility: visible; }
+            
+            #printArea { 
+                position: absolute; 
+                left: 0; 
+                top: 0; 
+                width: 100%; 
+                display: block !important;
+                text-align: center;
+            }
+
+            #printArea img { 
+                max-width: 100%; 
+                height: auto; 
+                margin: 0 auto;
+                display: block;
+            }
         }
     </style>
 </head>
@@ -46,64 +72,42 @@
 
 <div class="container">
     <div class="header">
-        <h1 style="margin:0;">🖨️ Nando Print Admin</h1>
-        <p style="margin:5px 0 0; font-size:12px; color:#666;">Data Pelanggan & Manajemen Produksi</p>
+        <h1>🚀 Nando Print - Command Center</h1>
+        <p>Manajemen Pesanan & Cetak Otomatis</p>
     </div>
 
-    <div class="main-content">
-        <div class="input-section">
-            <div class="form-group">
-                <label>Nama Pelanggan</label>
-                <input type="text" id="nama" placeholder="Budi">
-            </div>
-            <div class="form-group">
-                <label>WhatsApp</label>
-                <input type="text" id="telp" placeholder="08...">
-            </div>
-            <div class="form-group">
-                <label>Jenis & Jumlah</label>
-                <div style="display: flex; gap: 5px;">
-                    <select id="jenis" style="flex: 2;">
-                        <option value="A4" data-harga="1000">A4 (1rb)</option>
-                        <option value="F4" data-harga="1000">F4 (1rb)</option>
-                        <option value="Foto A4" data-harga="3000">Foto (3rb)</option>
-                    </select>
-                    <input type="number" id="qty" value="1" style="flex: 1;">
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Estimasi (Menit)</label>
-                <input type="number" id="estimasi" value="10">
-            </div>
-            <button class="btn-submit" onclick="simpanData()">➕ Tambah Order</button>
-        </div>
+    <div style="overflow-x: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Waktu</th>
+                    <th>Nama Pelanggan</th>
+                    <th>Ukuran/Jenis</th>
+                    <th>File (Klik utk Cetak)</th>
+                    <th>Status</th>
+                    <th>Total Biaya</th>
+                    <th>Tindakan</th>
+                </tr>
+            </thead>
+            <tbody id="listOrder">
+                </tbody>
+        </table>
+    </div>
 
-        <div class="output-section">
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Preview</th>
-                            <th>Nama</th>
-                            <th>Jenis/Ukuran</th> <th>Status</th>
-                            <th>Countdown</th>
-                            <th>Total</th>
-                            <th>Opsi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="listOrder"></tbody>
-                </table>
-            </div>
-            <div class="total-card">
-                <span>💰 Pendapatan Hari Ini</span>
-                <span style="font-size: 1.4em;">Rp <span id="omzet">0</span></span>
-            </div>
+    <div class="omzet-box">
+        <div>
+            <h3 style="margin:0; opacity: 0.8; font-size: 14px;">TOTAL PENDAPATAN HARI INI</h3>
+            <h2 style="margin:5px 0 0; font-size: 32px;">Rp <span id="omzet">0</span></h2>
+        </div>
+        <div style="text-align: right;">
+            <p style="margin:0; font-size: 12px;">PIN Aktif: <strong>???</strong></p>
         </div>
     </div>
 </div>
 
+<div id="printArea"></div>
+
 <script>
-    // Config Firebase (Tetap pakai punya lu)
     const firebaseConfig = {
         apiKey: "AIzaSyB4CBP0S3dhsxFb17ToVhFFF7Kvjw_7j88",
         authDomain: "print-nndo.firebaseapp.com",
@@ -116,110 +120,98 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const rootRef = db.ref('pesanan_nando');
-    
-    // PIN ADMIN BARU
-    const PIN = "900"; 
+    const PIN_ADMIN = "900";
 
-    function simpanData() {
-        const nama = document.getElementById('nama').value;
-        const telp = document.getElementById('telp').value;
-        const select = document.getElementById('jenis');
-        const qty = parseInt(document.getElementById('qty').value);
-        const est = parseInt(document.getElementById('estimasi').value);
-        const harga = parseInt(select.options[select.selectedIndex].dataset.harga);
-
-        if(!nama || !telp) return alert("Isi dulu datanya!");
-
-        const targetTime = Date.now() + (est * 60000);
-
-        rootRef.push({
-            nama, telp, qty, targetTime,
-            jenis: select.value,
-            total: harga * qty,
-            status: "Antri",
-            date: new Date().toLocaleDateString('en-CA')
-        });
-
-        document.getElementById('nama').value = "";
-        document.getElementById('telp').value = "";
-    }
-
-    // Refresh Tabel setiap 5 detik
-    setInterval(() => {
-        rootRef.once('value', (snap) => renderTable(snap.val()));
-    }, 5000);
-
-    rootRef.on('value', (snap) => renderTable(snap.val()));
-
-    function renderTable(data) {
+    rootRef.on('value', (snapshot) => {
+        const data = snapshot.val();
         const tbody = document.getElementById('listOrder');
         const today = new Date().toLocaleDateString('en-CA');
+        let omzetHariIni = 0;
+        
         tbody.innerHTML = "";
-        let totalHariIni = 0;
 
-        if(!data) {
-            document.getElementById('omzet').innerText = "0";
-            return;
+        if (data) {
+            Object.keys(data).reverse().forEach(key => {
+                const item = data[key];
+                if(item.date === today) omzetHariIni += (item.total || 0);
+
+                const statusClass = item.status === "Antri" ? "bg-antri" : (item.status === "Proses" ? "bg-proses" : "bg-selesai");
+                
+                let photoHTML = "📄";
+                if (item.fotos && Array.isArray(item.fotos)) {
+                    photoHTML = `<div class="photo-grid">` + 
+                        item.fotos.map(img => `<img src="${img}" class="img-thumb" onclick="cetakSekarang('${img}')" title="Klik untuk Cetak">`).join('') + 
+                        `</div>`;
+                } else if (item.foto) {
+                    photoHTML = `<img src="${item.foto}" class="img-thumb" onclick="cetakSekarang('${item.foto}')" title="Klik untuk Cetak">`;
+                }
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${new Date(item.targetTime - (10 * 60000)).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
+                        <td><strong>${item.nama}</strong><br><small>${item.telp}</small></td>
+                        <td><span style="color:#4b6cb7; font-weight:600">${item.jenis || 'A4'}</span><br><small>${item.qty || 1} Lembar</small></td>
+                        <td>${photoHTML}</td>
+                        <td><button class="badge ${statusClass}" onclick="ubahStatus('${key}', '${item.status}')">${item.status}</button></td>
+                        <td>Rp ${(item.total || 0).toLocaleString()}</td>
+                        <td>
+                            <button class="btn-action btn-wa" onclick="kontakWA('${item.telp}', '${item.nama}', '${item.status}')">WA</button>
+                            <button class="btn-action btn-del" onclick="hapusPesanan('${key}')">Hapus</button>
+                        </td>
+                    </tr>
+                `;
+            });
         }
+        document.getElementById('omzet').innerText = omzetHariIni.toLocaleString();
+    });
 
-        Object.keys(data).forEach(key => {
-            const item = data[key];
-            if(item.date === today) totalHariIni += item.total;
+    /* ==========================================
+       FITUR FIX: LOGIKA CETAK ANTI-BLANK
+    ========================================== */
+    function cetakSekarang(url) {
+        const printArea = document.getElementById('printArea');
+        
+        // Buat elemen gambar sementara
+        printArea.innerHTML = `<img src="${url}" id="imgToPrint">`;
+        
+        const img = document.getElementById('imgToPrint');
 
-            const sisaMs = item.targetTime - Date.now();
-            let sisaText = "Selesai!";
-            if(sisaMs > 0 && item.status !== "Selesai") {
-                const min = Math.floor(sisaMs / 60000);
-                const sec = Math.floor((sisaMs % 60000) / 1000);
-                sisaText = `${min}m ${sec}s`;
-            }
+        // Tunggu gambar selesai dimuat oleh browser
+        img.onload = function() {
+            // Kasih jeda sedikit lagi biar browser bener-bener siap render preview
+            setTimeout(() => {
+                window.print();
+                printArea.innerHTML = ""; // Bersihkan setelah selesai
+            }, 300);
+        };
 
-            const sClass = item.status === "Antri" ? "bg-antri" : (item.status === "Proses" ? "bg-proses" : "bg-selesai");
-
-            tbody.innerHTML += `
-                <tr>
-                    <td data-label="Preview">${item.foto ? `<img src="${item.foto}" style="width:40px;height:40px;object-fit:cover;border-radius:4px">` : '📄'}</td>
-                    <td data-label="Nama">${item.nama}</td>
-                    <td data-label="Jenis/Ukuran"><strong>${item.jenis || 'A4'}</strong> (${item.qty} lbr)</td>
-                    <td data-label="Status">
-                        <button class="badge ${sClass}" onclick="gantiStatus('${key}', '${item.status}')">${item.status}</button>
-                    </td>
-                    <td data-label="Estimasi">${item.status === "Selesai" ? "✅" : sisaText}</td>
-                    <td data-label="Total">Rp ${item.total.toLocaleString()}</td>
-                    <td data-label="Opsi">
-                        <button class="btn-action btn-wa" onclick="waBuyer('${item.telp}', '${item.nama}', '${item.status}')">WA</button>
-                        <button class="btn-action btn-delete" onclick="hapusData('${key}')">Hapus</button>
-                    </td>
-                </tr>
-            `;
-        });
-        document.getElementById('omzet').innerText = totalHariIni.toLocaleString();
+        img.onerror = function() {
+            alert("Waduh, Master! Gambarnya gagal dimuat. Coba cek koneksi atau database lu.");
+        };
     }
 
-    function gantiStatus(key, cur) {
-        if(prompt("PIN Admin:") !== PIN) return alert("PIN Salah!");
-        const next = cur === "Antri" ? "Proses" : (cur === "Proses" ? "Selesai" : "Antri");
-        rootRef.child(key).update({ status: next });
+    function ubahStatus(key, statusLama) {
+        const pin = prompt("Konfirmasi PIN Admin:");
+        if (pin !== PIN_ADMIN) return alert("PIN Salah!");
+        let statusBaru = statusLama === "Antri" ? "Proses" : (statusLama === "Proses" ? "Selesai" : "Antri");
+        rootRef.child(key).update({ status: statusBaru });
     }
 
-    function hapusData(key) {
-        const konfirmasi = prompt("Masukkan PIN Admin untuk menghapus:");
-        if(konfirmasi === PIN) {
-            rootRef.child(key).remove()
-                .then(() => alert("Data berhasil dihapus!"))
-                .catch(err => alert("Gagal: " + err));
-        } else if(konfirmasi !== null) {
-            alert("PIN Salah! Data tidak dihapus.");
-        }
+    function hapusPesanan(key) {
+        const pin = prompt("Masukkan PIN Admin untuk menghapus:");
+        if (pin === PIN_ADMIN) {
+            if (confirm("Yakin mau hapus history cuan ini?")) rootRef.child(key).remove();
+        } else if (pin !== null) alert("PIN Salah!");
     }
 
-    function waBuyer(telp, nama, status) {
-        let clean = telp.replace(/\D/g,'');
-        if(clean.startsWith('0')) clean = '62' + clean.slice(1);
-        let msg = `Halo ${nama}, pesanan print kamu *${status}*. `;
-        if(status === "Selesai") msg = `Halo ${nama}, pesanan print kamu sudah *SELESAI*. Silakan diambil ya!`;
-        window.open(`https://wa.me/${clean}?text=${encodeURIComponent(msg)}`, '_blank');
+    function kontakWA(telp, nama, status) {
+        let hp = telp.replace(/\D/g, '');
+        if (hp.startsWith('0')) hp = '62' + hp.slice(1);
+        let pesan = `Halo ${nama}, pesanan print kamu sedang kami *${status}*.`;
+        if(status === "Selesai") pesan = `Halo ${nama}, pesanan print kamu sudah *SELESAI*. Silakan diambil ya!`;
+        window.open(`https://wa.me/${hp}?text=${encodeURIComponent(pesan)}`, '_blank');
     }
 </script>
+
 </body>
 </html>
